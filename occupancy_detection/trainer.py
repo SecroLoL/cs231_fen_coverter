@@ -18,6 +18,7 @@ from occupancy_detection.resnet import ResNetClassifier
 from typing import List, Mapping, Tuple, Any
 from occupancy_detection.model_types import ModelType, load_model
 from occupancy_detection.evaluate import evaluate_model
+from collections import OrderedDict
 
 # Create and configure the logger
 logger = logging.getLogger('chess_square_classifier')
@@ -45,8 +46,6 @@ def load_datasets(train_path: str, eval_path: str, batch_size: int = 32, train_s
     
     """
     Generate DataLoader objects from train path and eval path. 
-
-    TODO: Consider making this one for train and one for the eval
 
     Args:
         TODO
@@ -83,6 +82,11 @@ def load_datasets(train_path: str, eval_path: str, batch_size: int = 32, train_s
 
 def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: str, eval_path: str, batch_size: int = 32, lr: float = 0.001,
           train_size: int = None, eval_size: int = None) -> None:
+    
+    # For choosing models at each epoch
+    best_acc = 0
+    best_state = OrderedDict()
+    model_checkpoint_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saved_models", "occupancy", "cnn_100_chkpt.pth")
 
     # Load datasets
     train_loader, test_loader = load_datasets(train_path, eval_path, batch_size, train_size, eval_size)
@@ -114,13 +118,19 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
         
         logger.info(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
 
-    logger.info('Finished Training')
+        torch.save(model.state_dict(), model_checkpoint_path)
+        acc = evaluate_model(model_type, model_checkpoint_path, test_loader)
 
-    # Save the trained model
-    torch.save(model.state_dict(), save_path)
-    logging.info(f"Saved model to {save_path}")
+        if acc > best_acc:
+            torch.save(model.state_dict(), save_path)
+            best_acc = acc
+            logger.info(f"Epoch [{epoch + 1}/{num_epochs}]: New best accuracy {acc}. Saved model checkpoint to {save_path}.")
 
-    evaluate_model(ModelType.CNN_100, save_path, test_loader)
+    logger.info(f'Finished Training. Best val acc: {best_acc}.')
+    
+    if not os.path.exists(model_checkpoint_path):
+        raise FileNotFoundError(f"Attempted to remove {model_checkpoint_path}, but could not find file.")
+    os.remove(model_checkpoint_path)  # Delete checkpoint
 
 
 def main():

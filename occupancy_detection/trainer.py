@@ -123,4 +123,20 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
     evaluate_model(ModelType.CNN_100, save_path, test_loader)
 
 
+def main():
+    TRAIN_PATH = "/Users/alexshan/Desktop/chesscog/data/occupancy/train"
+    EVAL_PATH = "/Users/alexshan/Desktop/chesscog/data/occupancy/val"
+    SAVE_NAME = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saved_models", "occupancy", "cnn_100.pth")
 
+    NUM_EPOCHS = 10
+
+    train(NUM_EPOCHS,
+          ModelType.CNN_100,
+          SAVE_NAME,
+          TRAIN_PATH,
+          EVAL_PATH,
+          train_size=1000,
+          eval_size=100)
+    
+if __name__ == "__main__":
+    main()

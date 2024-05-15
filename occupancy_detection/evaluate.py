@@ -41,11 +41,13 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 
-# Set the model to evaluation mode
-model.eval()
-
-# Function to test the model
-def test_model(model, test_loader):
+def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: DataLoader):
+    
+    logger.info(f"Attempting to evaluate model {model_type}, path: {model_save_path}")
+    model = load_model(model_type)  
+    model.load_state_dict(torch.load(model_save_path))
+    model.eval()
+    
     correct = 0
     total = 0
     with torch.no_grad():  # No need to compute gradients for evaluation
@@ -55,7 +57,12 @@ def test_model(model, test_loader):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-    print(f'Accuracy of the model on the test images: {100 * correct / total:.2f}%')
+    logger.info(f'Accuracy of the model on the test images: {100 * correct / total:.2f}%')
 
-# Test the model
-test_model(model, test_loader)
+def main():
+    # evaluate_model()
+    pass 
+
+
+if __name__ == "__main__":
+    pass

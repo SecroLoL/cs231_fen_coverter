@@ -40,38 +40,46 @@ console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-TRAIN_PATH = "/Users/alexshan/Desktop/chesscog/data/occupancy/train"
-EVAL_PATH = "/Users/alexshan/Desktop/chesscog/data/occupancy/val"
 
-# Assuming CNN_100 is already defined as per your provided code
+def load_datasets(train_path: str, eval_path: str, batch_size: int = 32, train_size: int =  None, eval_size: int = None) -> Tuple[DataLoader, DataLoader]:
+    
+    """
+    Generate DataLoader objects from train path and eval path. 
 
-# Transformations for the dataset
-transform = transforms.Compose([
-    transforms.ToTensor()
-])
+    TODO: Consider making this one for train and one for the eval
 
-num_train_examples = 1000  # Adjust this number as needed
-num_test_examples = 200    # Adjust this number as needed
+    Args:
+        TODO
 
-train_dataset = datasets.ImageFolder(root=TRAIN_PATH, transform=transform)
-test_dataset = datasets.ImageFolder(root=EVAL_PATH, transform=transform)
+    Returns:
+        TODO
 
-print(f"Training dataset size: {len(train_dataset)}. Test set {len(test_dataset)}")
+    Raises:
+        TODO
+    """
+    
+    transform = transforms.Compose([
+        transforms.ToTensor()
+    ])
+    
+    # Convert datasets to ImageFolder types
+    train_dataset = datasets.ImageFolder(root=train_path, transform=transform)
+    test_dataset = datasets.ImageFolder(root=eval_path, transform=transform)
 
-train_indices = np.random.choice(len(train_dataset), num_train_examples, replace=False)
-test_indices = np.random.choice(len(test_dataset), num_test_examples, replace=False)
+    # Sample if required
+    if train_size is not None:
+        train_indices = np.random.choice(len(train_dataset), train_size, replace=False)
+        train_dataset = Subset(train_dataset, train_indices)
 
-train_subset = Subset(train_dataset, train_indices)
-test_subset = Subset(test_dataset, test_indices)
+    if eval_size is not None:
+        test_indices = np.random.choice(len(test_dataset), eval_size, replace=False)
+        test_dataset = Subset(test_dataset, test_indices)
 
-train_loader = DataLoader(train_subset, batch_size=32, shuffle=True)
-test_loader = DataLoader(test_subset, batch_size=32, shuffle=False)
-
-print("Loaded datasets")
-
-model = CNN_100()
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+    # Convert to dataloader
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    
+    return train_loader, test_loader
 
 # Training loop
 num_epochs = 10  

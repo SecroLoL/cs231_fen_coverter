@@ -11,11 +11,13 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))  # sys path issues, 
 import logging
 from torchvision import models
 from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
 from torch.utils.data import DataLoader, Subset
 import numpy as np
 from occupancy_detection.baseline_cnn import CNN_100
 from occupancy_detection.resnet import ResNetClassifier
+from typing import List, Mapping, Tuple, Any
+from occupancy_detection.model_types import ModelType, load_model
+from occupancy_detection.evaluate import evaluate_model
 
 # Create and configure the logger
 logger = logging.getLogger('chess_square_classifier')

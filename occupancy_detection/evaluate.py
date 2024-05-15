@@ -41,7 +41,11 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 
-def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: DataLoader):
+def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: DataLoader) -> float:
+
+    """
+    Computes accuracy over the test set using a saved model
+    """
     
     logger.info(f"Attempting to evaluate model {model_type}, path: {model_save_path}")
     model = load_model(model_type)  
@@ -56,8 +60,9 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
-
+    accuracy = 100 * correct / total
     logger.info(f'Accuracy of the model on the test images: {100 * correct / total:.2f}%')
+    return accuracy
 
 def main():
     # evaluate_model()

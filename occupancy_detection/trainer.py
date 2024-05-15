@@ -5,10 +5,10 @@ import torch.nn.functional as F
 import os 
 import sys 
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+# TODO: add this to PYTHONPATH so that this isn't an issue
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))  # sys path issues, this is a quick fix for now
 
 import logging
-
 from torchvision import models
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
@@ -16,6 +16,27 @@ from torch.utils.data import DataLoader, Subset
 import numpy as np
 from occupancy_detection.baseline_cnn import CNN_100
 from occupancy_detection.resnet import ResNetClassifier
+
+# Create and configure the logger
+logger = logging.getLogger('chess_square_classifier')
+logger.setLevel(logging.DEBUG)  # Set the logging level to DEBUG
+
+# Create a file handler to log messages to a file
+file_handler = logging.FileHandler('chess_square_classifier.log')
+file_handler.setLevel(logging.DEBUG)  # Set the logging level for the file handler
+
+# Create a console handler to log messages to the console
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)  # Set the logging level for the console handler
+
+# Create a formatter and set it for both handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+# Add the handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 TRAIN_PATH = "/Users/alexshan/Desktop/chesscog/data/occupancy/train"
 EVAL_PATH = "/Users/alexshan/Desktop/chesscog/data/occupancy/val"

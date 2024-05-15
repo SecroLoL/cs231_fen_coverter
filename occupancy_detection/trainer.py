@@ -18,7 +18,7 @@ from occupancy_detection.resnet import ResNetClassifier
 from typing import List, Mapping, Tuple, Any
 from occupancy_detection.model_types import ModelType, load_model
 from occupancy_detection.evaluate import evaluate_model
-from collections import OrderedDict
+from occupancy_detection.utils import *
 
 # Create and configure the logger
 logger = logging.getLogger('chess_square_classifier')
@@ -85,9 +85,8 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
     
     # For choosing models at each epoch
     best_acc = 0
-    best_state = OrderedDict()
-    model_checkpoint_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saved_models", "occupancy", "cnn_100_chkpt.pth")
-
+    model_checkpoint_path = generate_checkpoint_path(save_path)
+    print("using model checkpoint path", model_checkpoint_path)
     # Load datasets
     train_loader, test_loader = load_datasets(train_path, eval_path, batch_size, train_size, eval_size)
     
@@ -145,8 +144,8 @@ def main():
           SAVE_NAME,
           TRAIN_PATH,
           EVAL_PATH,
-          train_size=1000,
-          eval_size=100)
+          train_size=1500,
+          eval_size=300)
     
 if __name__ == "__main__":
     main()

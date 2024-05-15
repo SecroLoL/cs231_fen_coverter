@@ -81,35 +81,46 @@ def load_datasets(train_path: str, eval_path: str, batch_size: int = 32, train_s
     
     return train_loader, test_loader
 
-# Training loop
-num_epochs = 10  
+def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: str, eval_path: str, batch_size: int = 32, lr: float = 0.001,
+          train_size: int = None, eval_size: int = None) -> None:
 
-for epoch in range(num_epochs):
-    model.train()
-    running_loss = 0.0
+    # Load datasets
+    train_loader, test_loader = load_datasets(train_path, eval_path, batch_size, train_size, eval_size)
     
-    for inputs, labels in train_loader:
-        # Zero the parameter gradients
-        optimizer.zero_grad()
-        
-        # Forward pass
-        outputs = model(inputs)
-        loss = criterion(outputs, labels)
-        
-        # Backward pass and optimization
-        loss.backward()
-        optimizer.step()
-        
-        # Print statistics
-        running_loss += loss.item()
+    # Init model
+    model = load_model(model_type)  
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=lr)
     
-    print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
+    # Train loop
+    for epoch in range(num_epochs):
+        model.train()
+        running_loss = 0.0
+        
+        for inputs, labels in train_loader:
+            # Zero the parameter gradients
+            optimizer.zero_grad()
+            
+            # Forward pass
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            
+            # Backward pass and optimization
+            loss.backward()
+            optimizer.step()
+            
+            # Print statistics
+            running_loss += loss.item()
+        
+        logger.info(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
 
-print('Finished Training')
+    logger.info('Finished Training')
 
-# Save the trained model
-torch.save(model.state_dict(), 'chess_square_classifier.pth')
+    # Save the trained model
+    torch.save(model.state_dict(), save_path)
+    logging.info(f"Saved model to {save_path}")
 
+    evaluate_model(ModelType.CNN_100, save_path, test_loader)
 
 
 

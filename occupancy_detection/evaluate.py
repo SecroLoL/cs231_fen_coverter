@@ -16,26 +16,30 @@ from torch.utils.data import DataLoader, Subset
 import numpy as np
 from occupancy_detection.baseline_cnn import CNN_100
 from occupancy_detection.resnet import ResNetClassifier
+from typing import List, Mapping, Tuple, Any
+from occupancy_detection.model_types import ModelType, load_model
 
-# Assuming CNN_100 is already defined as per your provided code
-EVAL_PATH = "/Users/alexshan/Desktop/chesscog/data/occupancy/test"
+# Create and configure the logger
+logger = logging.getLogger('chess_square_classifier_eval')
+logger.setLevel(logging.DEBUG)  # Set the logging level to DEBUG
 
-# Transformations for the dataset
-transform = transforms.Compose([
-    transforms.ToTensor()
-])
+# Create a file handler to log messages to a file
+file_handler = logging.FileHandler('chess_square_classifier_eval.log')
+file_handler.setLevel(logging.DEBUG)  # Set the logging level for the file handler
 
-# Load your test dataset
-test_dataset = datasets.ImageFolder(root=EVAL_PATH, transform=transform)
+# Create a console handler to log messages to the console
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)  # Set the logging level for the console handler
 
-# Create DataLoader for the test dataset
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+# Create a formatter and set it for both handlers
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
 
-# Initialize the model
-model = CNN_100()
+# Add the handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
-# Load the saved model state
-model.load_state_dict(torch.load('chess_square_classifier.pth'))
 
 # Set the model to evaluation mode
 model.eval()

@@ -13,6 +13,12 @@ class ModelType(Enum):
     LLM = "LLM"
 
 
+ARGPARSE_TO_TYPE = {
+    "cnn": ModelType.CNN_100,
+    "resnet": ModelType.RESNET
+}
+
+
 def load_model(model_type: ModelType):
     """
     Loads in a base model given a specific ModelType
@@ -22,4 +28,3 @@ def load_model(model_type: ModelType):
     if model_type == ModelType.RESNET:
         return ResNetClassifier()
     # TODO add Inception and LLM model version
-    

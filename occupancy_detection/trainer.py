@@ -1,3 +1,4 @@
+import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -16,7 +17,7 @@ import numpy as np
 from occupancy_detection.baseline_cnn import CNN_100
 from occupancy_detection.resnet import ResNetClassifier
 from typing import List, Mapping, Tuple, Any
-from occupancy_detection.model_types import ModelType, load_model
+from occupancy_detection.model_types import ModelType, load_model, ARGPARSE_TO_TYPE
 from occupancy_detection.evaluate import evaluate_model
 from occupancy_detection.utils import *
 
@@ -133,19 +134,46 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
 
 
 def main():
-    TRAIN_PATH = "/Users/alexshan/Desktop/chesscog/data/occupancy/train"
-    EVAL_PATH = "/Users/alexshan/Desktop/chesscog/data/occupancy/val"
-    SAVE_NAME = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saved_models", "occupancy", "cnn_100.pth")
 
-    NUM_EPOCHS = 10
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--train_path", type=str, default="/Users/alexshan/Desktop/chesscog/data/occupancy/train", help="Path to training data")
+    parser.add_argument("--eval_path", type=str, default="/Users/alexshan/Desktop/chesscog/data/occupancy/val", help="Path to dev set")
+    parser.add_argument("--save_path", type=str, default=os.path.join(os.path.dirname(os.path.dirname(__file__)), "saved_models", "occupancy", "cnn_100.pth"),
+                        help="Path to model save file")
+    parser.add_argument("--num_epochs", type=int, default=10, help="Number of training epochs")
+    parser.add_argument("--lr", type=float, default=0.001, help="Learning rate")
+    parser.add_argument("--model_type", type=str, default="cnn", help="Model architecture: ['cnn', 'resnet', ...]")
+    parser.add_argument("--train_size", type=int, default=None, help="Size of training subset if needed")
+    parser.add_argument("--eval_size", type=int, default=None, help="Size of val subset if needed")
+    parser.add_argument("--batch_size", type=int, default=32, help="Sizes of each batch used in training")
+
+    args = parser.parse_args()
+
+    NUM_EPOCHS = args.num_epochs
+    MODEL_TYPE = ARGPARSE_TO_TYPE.get(args.model_type)
+    SAVE_NAME = args.save_path
+    TRAIN_PATH = args.train_path
+    EVAL_PATH = args.eval_path
+    LR = args.lr
+    TRAIN_SIZE = args.train_size
+    EVAL_SIZE = args.eval_size
+    BATCH_SIZE = args.batch_size
+
+    args = vars(args)
+    logger.info("Using the following args for training: ")
+    for arg, val in args.items():
+        logger.info(f"{arg}: {val}")
 
     train(NUM_EPOCHS,
-          ModelType.CNN_100,
+          MODEL_TYPE,
           SAVE_NAME,
           TRAIN_PATH,
           EVAL_PATH,
-          train_size=1500,
-          eval_size=300)
+          train_size=TRAIN_SIZE,
+          eval_size=EVAL_SIZE,
+          lr=LR,
+          batch_size=BATCH_SIZE)
     
 if __name__ == "__main__":
     main()

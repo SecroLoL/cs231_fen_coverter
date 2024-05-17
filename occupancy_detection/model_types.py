@@ -1,6 +1,7 @@
 from enum import Enum
 from occupancy_detection.baseline_cnn import CNN_100
 from occupancy_detection.resnet import ResNetClassifier
+from occupancy_detection.inception_v3 import InceptionV3Classifier
 
 """
 Model types for cleaner handling in training and eval files
@@ -15,7 +16,8 @@ class ModelType(Enum):
 
 ARGPARSE_TO_TYPE = {
     "cnn": ModelType.CNN_100,
-    "resnet": ModelType.RESNET
+    "resnet": ModelType.RESNET,
+    "inception": ModelType.INCEPTION
 }
 
 
@@ -27,4 +29,5 @@ def load_model(model_type: ModelType):
         return CNN_100()
     if model_type == ModelType.RESNET:
         return ResNetClassifier()
-    # TODO add Inception and LLM model version
+    if model_type == ModelType.INCEPTION:
+        return InceptionV3Classifier()

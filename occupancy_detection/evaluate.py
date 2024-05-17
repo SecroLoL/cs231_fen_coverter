@@ -64,6 +64,11 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
     logger.info(f'Accuracy of the model on the test images: {100 * correct / total:.2f}%')
     return accuracy
 
+# TODO make a version of the eval function that evaluates using a save path instead of the dataloader object
+# This will enable a CLI version to call this function, instead of current internal code use
+
+
+
 def main():
     # evaluate_model()
     pass 

@@ -43,7 +43,8 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 
-def load_datasets(train_path: str, eval_path: str, batch_size: int = 32, train_size: int =  None, eval_size: int = None) -> Tuple[DataLoader, DataLoader]:
+def load_datasets(train_path: str, eval_path: str, batch_size: int = 32, train_size: int =  None, eval_size: int = None,
+                  model_type: ModelType = None) -> Tuple[DataLoader, DataLoader]:
     
     """
     Generate DataLoader objects from train path and eval path. 
@@ -57,10 +58,19 @@ def load_datasets(train_path: str, eval_path: str, batch_size: int = 32, train_s
     Raises:
         TODO
     """
+
+    if model_type is None:
+        raise ValueError(f"ModelType {model_type} is invalid.")
     
     transform = transforms.Compose([
         transforms.ToTensor()
     ])
+
+    if model_type == ModelType.INCEPTION:
+        transform = transforms.Compose([
+        transforms.Resize((299, 299)),  
+        transforms.ToTensor(),
+        ])  # InceptionV3 requires images to be size 299 x 299
     
     # Convert datasets to ImageFolder types
     train_dataset = datasets.ImageFolder(root=train_path, transform=transform)
@@ -87,9 +97,8 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
     # For choosing models at each epoch
     best_acc = 0
     model_checkpoint_path = generate_checkpoint_path(save_path)
-    print("using model checkpoint path", model_checkpoint_path)
     # Load datasets
-    train_loader, test_loader = load_datasets(train_path, eval_path, batch_size, train_size, eval_size)
+    train_loader, test_loader = load_datasets(train_path, eval_path, batch_size, train_size, eval_size, model_type)
     
     # Init model
     model = load_model(model_type)  
@@ -106,9 +115,16 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
             optimizer.zero_grad()
             
             # Forward pass
-            outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            
+            if model_type == ModelType.INCEPTION:   # the InceptionV3 model has two loss variants that need to be combined
+                primary_outputs, aux_outputs = model(inputs)
+                primary_loss = criterion(primary_outputs, labels)
+                aux_loss = criterion(aux_outputs, labels)
+
+                loss = primary_loss + 0.4 * aux_loss   # https://arxiv.org/abs/1512.00567 gives reason for choosing 0.4 for the aux weight
+            else:
+                outputs = model(inputs)
+                loss = criterion(outputs, labels)
+                
             # Backward pass and optimization
             loss.backward()
             optimizer.step()

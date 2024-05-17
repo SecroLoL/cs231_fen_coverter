@@ -20,7 +20,7 @@ class ResNetClassifier(nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.model = models.resnet18(pretrained=True)
+        self.model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
         n = self.model.fc.in_features
         self.model.fc = nn.Linear(n, 2)   
         self.params = {

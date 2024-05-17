@@ -24,6 +24,8 @@ def find_corners(img: np.ndarray) -> np.ndarray:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 90, 400)
     lines = _detect_lines(edges)
+    if lines.shape[0] > 400:
+        raise Exception("too many lines in the image")
     all_horizontal_lines, all_vertical_lines = _cluster_lines(lines)
 
     horizontal_lines = _eliminate_similar_lines(
@@ -104,11 +106,11 @@ def _detect_lines(edges: np.ndarray) -> np.ndarray:
     lines = lines.squeeze(axis=-2)
     lines = _fix_negative_rho_in_hesse_normal_form(lines)
 
-    # threshold = np.deg2rad(30)
-    # vmask = np.abs(lines[:, 1]) < threshold
-    # hmask = np.abs(lines[:, 1] - np.pi / 2) < threshold
-    # mask = vmask | hmask
-    # lines = lines[mask]
+    threshold = np.deg2rad(30)
+    vmask = np.abs(lines[:, 1]) < threshold
+    hmask = np.abs(lines[:, 1] - np.pi / 2) < threshold
+    mask = vmask | hmask
+    lines = lines[mask]
     return lines
 
 
@@ -332,8 +334,9 @@ def _compute_vertical_borders(warped: np.ndarray, mask: np.ndarray, scale: np.nd
     G_x = np.abs(cv2.Sobel(warped, cv2.CV_64F, 1, 0,
                            ksize=3))
     G_x[~mask] = 0
-    temp = G_x.astype(np.uint8)
-    G_x = cv2.Canny(temp, 100, 200)
+    G_x = G_x / G_x.max() * 255
+    G_x = G_x.astype(np.uint8)
+    G_x = cv2.Canny(G_x, 100, 200)
     G_x[~mask] = 0
 
     def get_nonmax_supressed(x):
@@ -357,8 +360,9 @@ def _compute_horizontal_borders(warped: np.ndarray, mask: np.ndarray, scale: np.
     G_y = np.abs(cv2.Sobel(warped, cv2.CV_64F, 0, 1,
                            ksize=3))
     G_y[~mask] = 0
-    temp = G_y.astype(np.uint8)
-    G_y = cv2.Canny(temp, 120, 300)
+    G_y = G_y / G_y.max() * 255
+    G_y = G_y.astype(np.uint8)
+    G_y = cv2.Canny(G_y, 120, 300)
     G_y[~mask] = 0
 
     def get_nonmax_supressed(y):

@@ -1,0 +1,1 @@
+Total accuracy: 146 correct, 0 incorrect, 146 total. 100.0% accuracy. Avg euclidean error in pixels: 1.355750196359208

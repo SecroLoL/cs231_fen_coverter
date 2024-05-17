@@ -13,6 +13,7 @@ import logging
 from torchvision import models
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, Subset
+from tqdm import tqdm
 import numpy as np
 from occupancy_detection.baseline_cnn import CNN_100
 from occupancy_detection.resnet import ResNetClassifier
@@ -106,11 +107,11 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
     optimizer = optim.Adam(model.parameters(), lr=lr)
     
     # Train loop
-    for epoch in range(num_epochs):
+    for epoch in tqdm(range(num_epochs), desc="Beginning new epoch..."):
         model.train()
         running_loss = 0.0
         
-        for inputs, labels in train_loader:
+        for inputs, labels in tqdm(train_loader, desc="Training batches..."):
             # Zero the parameter gradients
             optimizer.zero_grad()
             

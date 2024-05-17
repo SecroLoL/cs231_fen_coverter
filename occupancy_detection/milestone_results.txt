@@ -1,0 +1,6 @@
+Train size 100, Best val set accuracy after 10 epochs: 66.0
+Train size 500, Best val set accuracy after 10 epochs: 93.6
+Train size 1000, Best val set accuracy after 10 epochs: 96.4
+Train size 2000, Best val set accuracy after 10 epochs: 97.1
+Train size 4000, Best val set accuracy after 10 epochs: 97.8
+Train size 6000, Best val set accuracy after 10 epochs: 97.56

@@ -56,7 +56,11 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
     total = 0
     with torch.no_grad():  # No need to compute gradients for evaluation
         for inputs, labels in test_loader:
-            outputs = model(inputs)
+            if model_type == ModelType.OWL:
+                texts = ["Is there a chess piece on the square?"] * len(labels)
+                outputs = model(inputs, texts)
+            else:
+                outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()

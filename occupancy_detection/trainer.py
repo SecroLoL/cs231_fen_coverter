@@ -122,6 +122,11 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
                 aux_loss = criterion(aux_outputs, labels)
 
                 loss = primary_loss + 0.4 * aux_loss   # https://arxiv.org/abs/1512.00567 gives reason for choosing 0.4 for the aux weight
+            elif model_type == ModelType.OWL:
+                labels_list = labels.tolist()
+                texts = ["The square is occupied by a chess piece." if label == 1 else "The square is empty." for label in labels_list]
+                outputs = model(inputs, texts)
+                loss = criterion(outputs, labels)
             else:
                 outputs = model(inputs)
                 loss = criterion(outputs, labels)

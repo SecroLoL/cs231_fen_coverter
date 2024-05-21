@@ -1,26 +1,15 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from transformers import ViTModel, ViTImageProcessor
+from transformers import ViTForImageClassification, ViTImageProcessor
 
 class ViTClassifier(nn.Module):
     def __init__(self, num_classes):
         super(ViTClassifier, self).__init__()
 
-        # Load the pretrained ViT model and feature extractor
-        self.vit = ViTModel.from_pretrained("google/vit-base-patch16-224")
+        # Load the pretrained ViT model for image classification
+        self.vit = ViTForImageClassification.from_pretrained("google/vit-base-patch16-224", num_labels=num_classes,
+                                                             ignore_mismatched_sizes=True)
         self.image_processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224")
-
-        # Use the projection dimension for the classification head
-        hidden_size = self.vit.config.hidden_size
-
-        # Define a custom classification head
-        self.classifier = nn.Sequential(
-            nn.Linear(hidden_size, 512),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(512, num_classes)
-        )
 
     def forward(self, images):
         # Preprocess the input images
@@ -30,10 +19,7 @@ class ViTClassifier(nn.Module):
         # Forward pass through the ViT model
         outputs = self.vit(pixel_values=pixel_values)
 
-        # Use the pooled output for classification
-        pooled_output = outputs.pooler_output
-
-        # Forward pass through the classification head
-        logits = self.classifier(pooled_output)
+        # Return logits from the ViT model directly
+        logits = outputs.logits
 
         return logits

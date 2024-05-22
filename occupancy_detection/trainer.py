@@ -140,11 +140,11 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
         
         logger.info(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
 
-        torch.save(model.state_dict(), model_checkpoint_path)
+        torch.save(model, model_checkpoint_path)
         acc, macro_f1, weighted_f1 = evaluate_model(model_type, model_checkpoint_path, test_loader)
 
         if weighted_f1 > best_f1:
-            torch.save(model.state_dict(), save_path)
+            torch.save(model, save_path)
             best_f1 = weighted_f1
             logger.info(f"Epoch [{epoch + 1}/{num_epochs}]: New best weighted F1 {weighted_f1}. Saved model checkpoint to {save_path}.")
 
@@ -161,7 +161,7 @@ def main():
 
     parser.add_argument("--train_path", type=str, default="/Users/alexshan/Desktop/chesscog/data/occupancy/train", help="Path to training data")
     parser.add_argument("--eval_path", type=str, default="/Users/alexshan/Desktop/chesscog/data/occupancy/val", help="Path to dev set")
-    parser.add_argument("--save_path", type=str, default=os.path.join(os.path.dirname(os.path.dirname(__file__)), "saved_models", "occupancy", "cnn_100.pth"),
+    parser.add_argument("--save_path", type=str, default=os.path.join(os.path.dirname(os.path.dirname(__file__)), "saved_models", "occupancy", "cnn.pt"),
                         help="Path to model save file")
     parser.add_argument("--num_epochs", type=int, default=10, help="Number of training epochs")
     parser.add_argument("--lr", type=float, default=0.001, help="Learning rate")

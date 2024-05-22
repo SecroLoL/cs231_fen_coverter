@@ -43,8 +43,7 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
     logger.info(f"Attempting to evaluate model {model_type}, path: {model_save_path}")
     
     # Model setup
-    model = load_model(model_type)  
-    model.load_state_dict(torch.load(model_save_path))
+    model = torch.load(model_save_path)
     model.eval()
     
     correct = 0

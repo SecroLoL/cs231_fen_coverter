@@ -96,7 +96,7 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
           train_size: int = None, eval_size: int = None) -> None:
     
     # For choosing models at each epoch
-    best_acc = 0
+    best_f1 = 0
     model_checkpoint_path = generate_checkpoint_path(save_path)
     # Load datasets
     train_loader, test_loader = load_datasets(train_path, eval_path, batch_size, train_size, eval_size, model_type)
@@ -141,14 +141,14 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
         logger.info(f'Epoch [{epoch+1}/{num_epochs}], Loss: {running_loss/len(train_loader):.4f}')
 
         torch.save(model.state_dict(), model_checkpoint_path)
-        acc = evaluate_model(model_type, model_checkpoint_path, test_loader)
+        acc, macro_f1, weighted_f1 = evaluate_model(model_type, model_checkpoint_path, test_loader)
 
-        if acc > best_acc:
+        if weighted_f1 > best_f1:
             torch.save(model.state_dict(), save_path)
-            best_acc = acc
-            logger.info(f"Epoch [{epoch + 1}/{num_epochs}]: New best accuracy {acc}. Saved model checkpoint to {save_path}.")
+            best_f1 = weighted_f1
+            logger.info(f"Epoch [{epoch + 1}/{num_epochs}]: New best weighted F1 {weighted_f1}. Saved model checkpoint to {save_path}.")
 
-    logger.info(f'Finished Training. Best val acc: {best_acc}.')
+    logger.info(f'Finished Training. Best weighted F1 on val set: {best_f1}.')
     
     if not os.path.exists(model_checkpoint_path):
         raise FileNotFoundError(f"Attempted to remove {model_checkpoint_path}, but could not find file.")

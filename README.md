@@ -6,3 +6,20 @@ We attempt to build a computer vision system that is capable of converting image
 
 The dataset we use to train and evaluate the model can be found here: https://osf.io/xf3ka/wiki/home/
 
+# Model stages 
+
+## Board detection
+For our board detection stage, we use a layered approach of mathematical algorithms to compute the four corners of the board and subsequently divide it evenly into the 64 squares of the chess board. 
+Specifically, we [TODO]
+
+## Occupancy classification
+We formulate our occupancy classification problem as a binary classification task on images of cropped chess board squares as identified by the board detection stage.
+We offer a range of models for occupancy detection on board squares. Our models include a baseline CNN composed of three convolutional layers, three pooling layers, and three fully connected layers.
+Additionally, we have more advanced models that we finetune on, such as Resnet, OwlV2, InceptionV3. The code to train and evaluate these models can be found in `occupancy_detection/`.
+
+## Piece classification
+Once a board square has been identified as containing a piece, we run a piece classifier over the cropped image to classify which color and type of piece the piece is. 
+We formulate the piece classification stage as a multiclass classification task where we attempt to assign a (color, piece) pair to every image.
+We offer a range of models for this task, such as our baseline CNN with the same model architecture as the CNN for occupancy detection, except that the classification head is changed 
+to accommodate the larger number of classes. We also finetune larger model architectures that are pretrained on ImageNet, such as ResNet, InceptionV3, and the Vision Transformer (ViT).
+The code for training and evaluating these models can be found in `piece_classifier/`.

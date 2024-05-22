@@ -102,10 +102,45 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
     return accuracy, macro_f1, weighted_f1
 
 
+def evaluate_model_from_paths(model_type: ModelType, model_save_path: str, eval_path: str, subset: int, batch_size: int = 32) -> Tuple[float, float, float]:
+    """
+    Evaluates a trained model on a test set given the path to model and the evaluation set.
+
+    Returns:
+        Tuple of floats. the first float is the accuracy, the second float is the macro f1, and the third is the weighted f1.
+    """
+
+    loader = load_dataset(model_type, eval_path, batch_size, subset_size=subset)
+    return evaluate_model(model_type, model_save_path, loader) 
+
 def main():
-    # evaluate_model()
-    pass 
+    DEFAULT_SAVED_MODELS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "saved_models", "occupancy", "cnn_100.pth")
+    DEFAULT_EVAL_PATH = "/Users/alexshan/Desktop/chesscog/data/occupancy/val"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_type", type=str, default="cnn", help="Model type that is being evaluated")
+    parser.add_argument("--save_name", type=str, default=DEFAULT_SAVED_MODELS_DIR, help="Path to model save file")
+    parser.add_argument("--eval_path", type=str, default=DEFAULT_EVAL_PATH, help="Path to test set.")
+    parser.add_argument("--subset", type=int, default=None, help="Size of dataset subset to use for evaluation, defaults to using entire dataset.")
+    parser.add_argument("--batch_size", type=int, default=32, help="Batch size for evaluation.")
+
+    args = parser.parse_args()
+
+    if not os.path.exists(args.save_name):
+        raise FileNotFoundError(f"Could not find model path provided: {args.save_name}")
+    if not os.path.exists(args.eval_path):
+        raise FileNotFoundError(f"Could not find path to evaluation dataset: {args.eval_path}")
+    
+    logger.info(f"Using the following arguments for model eval:")
+    args_dict = vars(args)
+    for arg, val in args_dict.items():
+        logger.info(f"Arg {arg} : {val}")
+    
+    return evaluate_model_from_paths(model_type=args.model_type,
+                                     model_save_path=args.save_name,
+                                     eval_path=args.eval_path,
+                                     subset=args.subset,
+                                     batch_size=args.batch_size)
 
 
 if __name__ == "__main__":
-    pass
+    main()

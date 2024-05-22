@@ -61,7 +61,7 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
     
     # Initialize counters for each class
     for _, labels in test_loader:
-        num_classes = len(torch.unique(labels))
+        num_classes = 2
         for class_index in range(num_classes):
             class_tp[class_index] = 0
             class_fp[class_index] = 0

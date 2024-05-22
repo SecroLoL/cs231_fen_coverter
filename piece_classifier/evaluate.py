@@ -41,32 +41,67 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 
-def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: DataLoader) -> float:
-
+def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: DataLoader):
     """
-    Computes accuracy over the test set using a saved model
+    Computes accuracy and F1 scores over the test set using a saved model.
     """
-    
     logger.info(f"Attempting to evaluate model {model_type}, path: {model_save_path}")
-    # model = load_model(model_type)  
-    # model.load_state_dict(torch.load(model_save_path))
+    
+    # Model setup
     model = torch.load(model_save_path)
     model.eval()
     
     correct = 0
     total = 0
-    with torch.no_grad():  # No need to compute gradients for evaluation
+    class_tp = {}
+    class_fp = {}
+    class_fn = {}
+    
+    # Initialize counters for each class
+    for _, labels in test_loader:
+        num_classes = 12
+        for class_index in range(num_classes):
+            class_tp[class_index] = 0
+            class_fp[class_index] = 0
+            class_fn[class_index] = 0
+        break
+    
+    with torch.no_grad():  
         for inputs, labels in test_loader:
-            if model_type == ModelType.OWL:
-                outputs = model(inputs, [["a photo of a chess piece"] for _ in range(len(inputs))])
-            else:
-                outputs = model(inputs)
+
+            outputs = model(inputs)
+            
             _, predicted = torch.max(outputs.data, 1)
+            
+            if predicted.shape != labels.shape:
+                raise ValueError(f"Shape mismatch: labels have shape {labels.shape} while predictions have shape {predicted.shape}")
+
+            for i in range(len(labels)):
+                true_class = labels[i].item()
+                pred_class = predicted[i].item()
+                
+                if true_class == pred_class:
+                    class_tp[true_class] += 1
+                else:
+                    class_fp[pred_class] += 1
+                    class_fn[true_class] += 1
+            
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
+    
     accuracy = 100 * correct / total
-    logger.info(f'Accuracy of the model on the test images: {100 * correct / total:.2f}%')
-    return accuracy
+
+    precision = {class_index: class_tp[class_index] / (class_tp[class_index] + class_fp[class_index]) if (class_tp[class_index] + class_fp[class_index]) > 0 else 0 for class_index in class_tp}
+    recall = {class_index: class_tp[class_index] / (class_tp[class_index] + class_fn[class_index]) if (class_tp[class_index] + class_fn[class_index]) > 0 else 0 for class_index in class_tp}
+    f1 = {class_index: 2 * precision[class_index] * recall[class_index] / (precision[class_index] + recall[class_index]) if (precision[class_index] + recall[class_index]) > 0 else 0 for class_index in class_tp}
+
+    macro_f1 = np.mean(list(f1.values()))
+    weighted_f1 = sum((class_tp[class_index] + class_fn[class_index]) * f1[class_index] for class_index in class_tp) / total
+    
+    logger.info(f'Accuracy of the model on the test images: {accuracy:.2f}%')
+    logger.info(f'Macro F1: {macro_f1}. Weighted F1: {weighted_f1}')
+    
+    return accuracy, macro_f1, weighted_f1
 
 # TODO make a version of the eval function that evaluates using a save path instead of the dataloader object
 # This will enable a CLI version to call this function, instead of current internal code use

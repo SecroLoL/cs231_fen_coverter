@@ -7,17 +7,15 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
+import argparse
 import logging
 
-from torchvision import models
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
-from torch.utils.data import DataLoader, Subset
 import numpy as np
-from piece_classifier.cnn import CNN_100
-from piece_classifier.resnet import ResNetClassifier
 from typing import List, Mapping, Tuple, Any
+from torch.utils.data import DataLoader, Subset
 from piece_classifier.model_types import ModelType, load_model
+from piece_classifier.utils import load_dataset
+from tqdm import tqdm
 
 # Create and configure the logger
 logger = logging.getLogger('chess_piece_classifier_eval')
@@ -67,7 +65,7 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
         break
     
     with torch.no_grad():  
-        for inputs, labels in test_loader:
+        for inputs, labels in tqdm(test_loader, desc="Evaluating model..."):
 
             outputs = model(inputs)
             

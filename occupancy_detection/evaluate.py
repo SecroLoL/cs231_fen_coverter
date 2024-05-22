@@ -1,7 +1,5 @@
+import argparse
 import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
 import os 
 import sys 
 
@@ -9,16 +7,12 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 import logging
 
-from torchvision import models
-from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-from torch.utils.data import DataLoader, Subset
 import numpy as np
-from occupancy_detection.baseline_cnn import CNN_100
-from occupancy_detection.resnet import ResNetClassifier
+from occupancy_detection.utils import load_dataset
 from typing import List, Mapping, Tuple, Any
-from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 from occupancy_detection.model_types import ModelType, load_model
+from tqdm import tqdm
 
 # Create and configure the logger
 logger = logging.getLogger('chess_square_classifier_eval')
@@ -69,7 +63,7 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
         break
     
     with torch.no_grad():  
-        for inputs, labels in test_loader:
+        for inputs, labels in tqdm(test_loader, desc="Evaluating model..."):
             if model_type == ModelType.OWL:
                 texts = ["Is there a chess piece on the square?"] * len(labels)
                 outputs = model(inputs, texts)

@@ -2,11 +2,14 @@ import cv2
 import numpy as np
 import chess
 
-from board_detection.detect_board import sort_corner_points
-
 SQUARE_SIZE = 50
 BOARD_SIZE = 8 * SQUARE_SIZE
 IMG_SIZE = BOARD_SIZE + 2 * SQUARE_SIZE
+MARGIN = (IMG_SIZE - BOARD_SIZE) / 2
+MIN_HEIGHT_INCREASE, MAX_HEIGHT_INCREASE = 1, 3
+MIN_WIDTH_INCREASE, MAX_WIDTH_INCREASE = .25, 1
+OUT_WIDTH = int((1 + MAX_WIDTH_INCREASE) * SQUARE_SIZE)
+OUT_HEIGHT = int((1 + MAX_HEIGHT_INCREASE) * SQUARE_SIZE)
 
 def crop_square(img: np.ndarray, square: chess.Square, turn: chess.Color, mode="NONE") -> np.ndarray:
     """Crop a chess square from the warped input image for occupancy classification.
@@ -77,3 +80,56 @@ def warp_chessboard_image(img: np.ndarray, corners: np.ndarray) -> np.ndarray:
                            ], dtype=np.float32)
     transformation_matrix, mask = cv2.findHomography(src_points, dst_points)
     return cv2.warpPerspective(img, transformation_matrix, (IMG_SIZE, IMG_SIZE))
+
+def sort_corner_points(points):
+    # First, order by y-coordinate
+    points = points[points[:, 1].argsort()]
+    # Sort top x-coordinates
+    points[:2] = points[:2][points[:2, 0].argsort()]
+    # Sort bottom x-coordinates (reversed)
+    points[2:] = points[2:][points[2:, 0].argsort()[::-1]]
+
+    return points
+
+def resize_image(img):
+    """Resize an image for use in the corner detection pipeline, maintaining the aspect ratio.
+
+    Args:
+        cfg (CN): the configuration object
+        img (np.ndarray): the input image
+
+    Returns:
+        typing.Tuple[np.ndarray, float]: the resized image along with the scale of this new image
+    """
+    h, w, _ = img.shape
+    scale = 1200 / w
+    dims = (1200, int(h * scale))
+    img = cv2.resize(img, dims)
+    return img, scale
+
+def name_to_piece(name: str) -> chess.Piece:
+    """Convert the name of a piece to an instance of :class:`chess.Piece`.
+
+    Args:
+        name (str): the name of the piece
+
+    Returns:
+        chess.Piece: the instance of :class:`chess.Piece`
+    """
+    color, piece_type = name.split("_")
+    color = color == "white"
+    piece_type = chess.PIECE_NAMES.index(piece_type)
+    return chess.Piece(piece_type, color)
+
+pieces = list(map(name_to_piece, ["black_bishop",
+    "black_king",
+    "black_knight",
+    "black_pawn",
+    "black_queen",
+    "black_rook",
+    "white_bishop",
+    "white_king",
+    "white_knight",
+    "white_pawn",
+    "white_queen",
+    "white_rook"]))

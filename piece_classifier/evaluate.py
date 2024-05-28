@@ -15,6 +15,7 @@ from typing import List, Mapping, Tuple, Any
 from torch.utils.data import DataLoader, Subset
 from piece_classifier.model_types import ModelType, load_model
 from piece_classifier.utils import load_dataset
+from occupancy_detection.utils import default_device
 from tqdm import tqdm
 
 # Create and configure the logger
@@ -44,9 +45,9 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
     Computes accuracy and F1 scores over the test set using a saved model.
     """
     logger.info(f"Attempting to evaluate model {model_type}, path: {model_save_path}")
-    
+    device = default_device()
     # Model setup
-    model = torch.load(model_save_path)
+    model = torch.load(model_save_path).to(device)
     model.eval()
     
     correct = 0
@@ -66,7 +67,8 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
     
     with torch.no_grad():  
         for inputs, labels in tqdm(test_loader, desc="Evaluating model..."):
-
+            
+            inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             
             _, predicted = torch.max(outputs.data, 1)

@@ -94,7 +94,7 @@ def load_datasets(train_path: str, eval_path: str, batch_size: int = 32, train_s
 
 def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: str, eval_path: str, batch_size: int = 32, lr: float = 0.001,
           train_size: int = None, eval_size: int = None) -> None:
-    
+    device = default_device()
     # For choosing models at each epoch
     best_f1 = 0
     model_checkpoint_path = generate_checkpoint_path(save_path)
@@ -103,8 +103,8 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
     
     # Init model
     logger.info(f"Loading {model_type}")
-    model = load_model(model_type)  
-    criterion = nn.CrossEntropyLoss()
+    model = load_model(model_type).to(device)  
+    criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
     
     # Train loop
@@ -117,6 +117,8 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
         for inputs, labels in tqdm(train_loader, desc="Training batches..."):
             # Zero the parameter gradients
             optimizer.zero_grad()
+
+            inputs, labels = inputs.to(device), labels.to(device)
             
             # Forward pass
             if model_type == ModelType.INCEPTION:   # the InceptionV3 model has two loss variants that need to be combined

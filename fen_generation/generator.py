@@ -1,7 +1,9 @@
-from utils import crop_square, warp_chessboard_image, resize_image, sort_corner_points, pieces as piece_mapping
-from baseline_cnn import CNN_100 as occupancy_cnn
-from cnn import CNN_100 as classifier_cnn
-from detect_board import find_corners
+import sys
+import os 
+from fen_generation.utils import crop_square, warp_chessboard_image, resize_image, sort_corner_points, pieces as piece_mapping
+from occupancy_detection.baseline_cnn import CNN_100 as occupancy_cnn
+from piece_classifier.cnn import CNN_100 as classifier_cnn
+from board_detection.detect_board import find_corners
 from PIL import Image
 import chess
 import torch
@@ -22,7 +24,7 @@ class Generator:
         
     def _load_model(self, model_path, model_class):
         model = model_class()
-        model.load_state_dict(torch.load(model_path, map_location=self.device))
+        model = torch.load(model_path, map_location=self.device)
         model.to(self.device)
         model.eval()  # Set the model to evaluation mode
         return model

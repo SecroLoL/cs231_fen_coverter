@@ -3,6 +3,7 @@ General utility functions for all code in this dir
 """
 import os 
 import sys 
+import torch
 
 # TODO: add this to PYTHONPATH so that this isn't an issue
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))  # sys path issues, this is a quick fix for now
@@ -66,3 +67,13 @@ def load_dataset(model_type: ModelType, data_path: str, batch_size: int = 32, su
     
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     return loader
+
+
+def default_device():
+    """
+    Pick a default device based on what's available on this system
+    """
+    if torch.cuda.is_available():
+        return 'cuda'
+    return 'cpu'
+

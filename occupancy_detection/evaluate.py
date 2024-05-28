@@ -9,7 +9,7 @@ import logging
 
 from torch.utils.data import DataLoader
 import numpy as np
-from occupancy_detection.utils import load_dataset
+from occupancy_detection.utils import load_dataset, default_device
 from typing import List, Mapping, Tuple, Any
 from occupancy_detection.model_types import ModelType, load_model
 from tqdm import tqdm
@@ -41,9 +41,10 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
     Computes accuracy and F1 scores over the test set using a saved model.
     """
     logger.info(f"Attempting to evaluate model {model_type}, path: {model_save_path}")
-    
+    device = default_device()
+
     # Model setup
-    model = torch.load(model_save_path)
+    model = torch.load(model_save_path).to(device)
     model.eval()
     
     correct = 0
@@ -63,6 +64,8 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
     
     with torch.no_grad():  
         for inputs, labels in tqdm(test_loader, desc="Evaluating model..."):
+
+            inputs, labels = inputs.to(device), labels.to(device)
             if model_type == ModelType.OWL:
                 texts = ["Is there a chess piece on the square?"] * len(labels)
                 outputs = model(inputs, texts)

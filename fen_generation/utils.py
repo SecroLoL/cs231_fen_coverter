@@ -46,7 +46,9 @@ def crop_square(img: np.ndarray, square: chess.Square, turn: chess.Color, mode="
             (MAX_WIDTH_INCREASE - MIN_WIDTH_INCREASE) * ((col - 4) / 3)
         x1 = int(MARGIN + SQUARE_SIZE * (col - left_increase))
         x2 = int(MARGIN + SQUARE_SIZE * (col + 1 + right_increase))
-        y1 = int(MARGIN + SQUARE_SIZE * (row - height_increase))
+        # modified to max due to height increase sometimes being greater than the row allows?
+        # can also try abs
+        y1 = int(max(0, MARGIN + SQUARE_SIZE * (row - height_increase)))
         y2 = int(MARGIN + SQUARE_SIZE * (row + 1))
         width = x2-x1
         height = y2-y1
@@ -121,7 +123,7 @@ def name_to_piece(name: str) -> chess.Piece:
     piece_type = chess.PIECE_NAMES.index(piece_type)
     return chess.Piece(piece_type, color)
 
-pieces = list(map(name_to_piece, ["black_bishop",
+pieces = np.array(list(map(name_to_piece, ["black_bishop",
     "black_king",
     "black_knight",
     "black_pawn",
@@ -132,4 +134,4 @@ pieces = list(map(name_to_piece, ["black_bishop",
     "white_knight",
     "white_pawn",
     "white_queen",
-    "white_rook"]))
+    "white_rook"])))

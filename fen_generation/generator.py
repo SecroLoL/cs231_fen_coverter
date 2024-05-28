@@ -15,7 +15,6 @@ import functools
 class Generator:
     def __init__(self, occupancy_path, classifier_path):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        print(occupancy_path, classifier_path)
         self.occupancy_model = self._load_model(occupancy_path, occupancy_cnn)
         self.classifier_model = self._load_model(classifier_path, classifier_cnn)
         self.transform = transforms.Compose([
@@ -26,7 +25,7 @@ class Generator:
         model = model_class()
         model = torch.load(model_path, map_location=self.device)
         model.to(self.device)
-        model.eval()  # Set the model to evaluation mode
+        model.eval() 
         return model
         
     def classify_occupancy(self, img, turn, corners):
@@ -42,16 +41,12 @@ class Generator:
         occupancy = occupancy.cpu().numpy()
         return occupancy
     
-    def classify_pieces(self, img, turn, corners, occupancy):
+    def classify_pieces(self, img, turn, corners, occupancy: np.ndarray):
         squares = list(chess.SQUARES)
         occupied_squares = np.array(squares)[occupancy]
-        print(occupied_squares)
-        if not occupied_squares:
-            print("No pieces detected.")
-            return np.zeros(64)
         warped = warp_chessboard_image(img, corners)
         piece_imgs = map(functools.partial(
-            crop_square, warped, turn=turn, mode="PIECE"), squares)
+            crop_square, warped, turn=turn, mode="PIECE"), occupied_squares)
         piece_imgs = map(lambda img: self.transform(img), piece_imgs)
         piece_imgs = list(piece_imgs)
         piece_imgs = torch.stack(piece_imgs).to(self.device)
@@ -59,7 +54,6 @@ class Generator:
         pieces = self.classifier_model(piece_imgs)
         pieces = pieces.argmax(axis=-1).cpu().numpy()
         
-        # TODO: figure out what mapping was used for pieces
         pieces = piece_mapping[pieces]
         all_pieces = np.full(64, None, dtype=object)
         all_pieces[occupancy] = pieces

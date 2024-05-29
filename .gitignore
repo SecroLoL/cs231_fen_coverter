@@ -6,3 +6,4 @@ env
 *__pycache__/
 saved_models/
 piece_classifier/split_files.py
+*eval.txt

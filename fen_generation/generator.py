@@ -72,6 +72,6 @@ class Generator:
             for square, piece in zip(squares, pieces):
                 if piece:
                     board.set_piece_at(square, piece)
-            return board.fen()
+            return board
         
     

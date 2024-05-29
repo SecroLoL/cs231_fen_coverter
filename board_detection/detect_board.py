@@ -97,7 +97,7 @@ def find_corners(img: np.ndarray) -> np.ndarray:
     img_corners = _warp_points(inverse_transformation_matrix, corners)
     img_corners /= img_scale
     intersection_points /= img_scale
-    return sort_corner_points(img_corners), intersection_points
+    return sort_corner_points(img_corners)
 
 
 def _detect_lines(edges: np.ndarray) -> np.ndarray:

@@ -4,3 +4,5 @@ env
 *.json
 *.DS_Store
 *__pycache__/
+saved_models/
+piece_classifier/split_files.py

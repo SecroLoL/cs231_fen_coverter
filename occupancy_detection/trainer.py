@@ -124,6 +124,7 @@ def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: st
             
             # Forward pass
             if model_type == ModelType.INCEPTION:   # the InceptionV3 model has two loss variants that need to be combined
+                print(inputs.shape)
                 primary_outputs, aux_outputs = model(inputs)
                 primary_loss = criterion(primary_outputs, labels)
                 aux_loss = criterion(aux_outputs, labels)

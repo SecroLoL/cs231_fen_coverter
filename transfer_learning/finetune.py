@@ -2,6 +2,7 @@
 Finetune a trained occupancy or piece classifier on a transfer learning dataset.
 
 """
+import argparse
 import torch 
 import torch.nn as nn
 import torch.optim as optim
@@ -40,6 +41,9 @@ logger.addHandler(console_handler)
 # Load the transfer dataset
 def finetune_model(chkpt_path: str, num_epochs: int, model_type: ModelType, save_path: str, train_path: str, 
                    batch_size: int = 32, lr: float = 0.0001, train_size: int = None) -> None:
+    """
+    Finetune a pretrained model for either piece classification or occupancy detection
+    """
     device = default_device()
     model_checkpoint_path = generate_checkpoint_path(save_path)
     # Load datasets
@@ -51,7 +55,10 @@ def finetune_model(chkpt_path: str, num_epochs: int, model_type: ModelType, save
     )
     
     # Init model
-    model = torch.load(chkpt_path).to(device)
+    if device == "cpu":
+        model = torch.load(chkpt_path, map_location=torch.device('cpu'))
+    else:
+        model = torch.load(chkpt_path).to(device)
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=lr)
     best_loss = float("inf")
@@ -106,12 +113,27 @@ def finetune_model(chkpt_path: str, num_epochs: int, model_type: ModelType, save
 
 def main():
 
-    CHECKPOINT_PATH = "/Users/alexshan/Desktop/cs231_fen_coverter/saved_models/occupancy/cnn.pt"
-    NUM_EPOCHS = 15
-    MODEL_TYPE = ModelType.CNN_100
-    SAVE_PATH = "/Users/alexshan/Desktop/cs231_fen_coverter/saved_models/occupancy/cnn_finetuned.pt"
-    TRAIN_PATH = "/Users/alexshan/Desktop/chesscog/data/transfer_learning/occupancy/train/"
-    BATCH_SIZE = 16
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--checkpoint_path", type=str, default="/Users/alexshan/Desktop/cs231_fen_coverter/saved_models/transfer_learning/occupancy/cnn.pt", help="Path to model that is being finetuned")
+    parser.add_argument("--num_epochs", type=int, default=20, help="Number of training epochs")
+    parser.add_argument("--model_type", type=str, default="cnn", help="Model architecture ['cnn', 'resnet', 'inception']")
+    parser.add_argument("--save_path", type=str, default="/Users/alexshan/Desktop/cs231_fen_coverter/saved_models/transfer_learning/occupancy/cnn_finetuned.pt", help="Output file")
+    parser.add_argument("--train_path", type=str, default="/Users/alexshan/Desktop/chesscog/data/transfer_learning/occupancy/train/", help="Path to training root dir")
+    parser.add_argument("--batch_size", type=int, default=16, help="Batch size")
+    
+    args = parser.parse_args()
+
+    CHECKPOINT_PATH = args.checkpoint_path
+    NUM_EPOCHS = args.num_epochs
+    MODEL_TYPE = ARGPARSE_TO_TYPE.get(args.model_type)
+    SAVE_PATH = args.save_path
+    TRAIN_PATH = args.train_path
+    BATCH_SIZE = args.batch_size
+
+    args = vars(args)
+    for k, v in args.items():
+        logging.info(f"{k}: {v}")
 
     finetune_model(CHECKPOINT_PATH,
                    NUM_EPOCHS,

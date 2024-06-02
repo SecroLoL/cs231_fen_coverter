@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 import numpy as np
 from occupancy_detection.utils import load_dataset, default_device
 from typing import List, Mapping, Tuple, Any
-from occupancy_detection.model_types import ModelType, load_model
+from occupancy_detection.model_types import ModelType, load_model, ARGPARSE_TO_TYPE
 from tqdm import tqdm
 
 # Create and configure the logger
@@ -42,9 +42,14 @@ def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: Dat
     """
     logger.info(f"Attempting to evaluate model {model_type}, path: {model_save_path}")
     device = default_device()
-
+    
     # Model setup
-    model = torch.load(model_save_path).to(device)
+    if device == "cpu":
+        model = torch.load(model_save_path, map_location=torch.device('cpu'))
+    else:
+        model = torch.load(model_save_path).to(device)
+    
+    print(model)
     model.eval()
     
     correct = 0
@@ -137,8 +142,12 @@ def main():
     args_dict = vars(args)
     for arg, val in args_dict.items():
         logger.info(f"Arg {arg} : {val}")
+
+    MODEL_TYPE = ARGPARSE_TO_TYPE.get(args.model_type)
+
+    assert MODEL_TYPE is not None, f"Expected to find model type, instead got None ({args.model_type})."
     
-    return evaluate_model_from_paths(model_type=args.model_type,
+    return evaluate_model_from_paths(model_type=MODEL_TYPE,
                                      model_save_path=args.save_name,
                                      eval_path=args.eval_path,
                                      subset=args.subset,

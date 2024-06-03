@@ -51,13 +51,17 @@ def load_datasets(train_path: str, eval_path: str, batch_size: int = 32, train_s
     Generate DataLoader objects from train path and eval path. 
 
     Args:
-        TODO
+        train_path (str): Path to the directory containing training files
+        eval_path (str): Path to the directory containing evaluation files
+        batch_size (int, optional): Number of examples per training batch. Defaults to 32.
+        train_size (int, optional): Number of examples from training dataset to use as a subset. Defaults to using all examples.
+        eval_size (int, optional): Number of examples from evaluation dataset to use as a subset. Defaults to using all examples.
+        model_type (ModelType, optional): The ModelType class of the model that will be trained with these datasets**. 
 
     Returns:
-        TODO
+        DataLoader tuple containing the training dataloader and evaluation dataloader, respectively.
 
-    Raises:
-        TODO
+    ** the model_type parameter is required because certain ModelTypes such as Inception require unique data pre-processing.
     """
 
     if model_type is None:
@@ -94,7 +98,32 @@ def load_datasets(train_path: str, eval_path: str, batch_size: int = 32, train_s
 
 def train(num_epochs: int, model_type: ModelType, save_path: str, train_path: str, eval_path: str, batch_size: int = 32, lr: float = 0.001,
           train_size: int = None, eval_size: int = None) -> None:
+    """
+    Trains a piece classifier. Saves trained model to `save_path`.
+
+    Args:
+        num_epochs (int): The number of training epochs.
+        model_type (ModelType): The ModelType class of the model that is being trained
+        save_path (str): The outpath path to the save file for the model after finished training.
+        train_path (str): The path to the training directory
+        eval_path (str): the path to the eval directory
+        batch_size (int, optional): Number of examples per batch, defaults to 32.
+        lr (float, optional): Learning rate. Defaults to 1e-3.
+        train_size (int, optional): Number of examples to use for training as a subset. Defaults to using all training examples.
+        eval_size (int, optional): Number of examples to use for evaluating as a subset. Defaults to using all eval examples.
+    """
     device = default_device()
+
+    if os.path.exists(save_path): 
+        model_exists_msg = f"Expected to not find a model at save path {save_path}. Training model would overwrite the save. Aborting."
+        logger.error(model_exists_msg)
+        raise FileExistsError(model_exists_msg)
+    
+    if not os.path.exists(train_path):
+        no_train_dir_msg = f"Expected to find a training directory at {train_path}, but did not."
+        logger.error(no_train_dir_msg)
+        raise FileNotFoundError(no_train_dir_msg)
+
     # For choosing models at each epoch
     best_f1 = 0
     model_checkpoint_path = generate_checkpoint_path(save_path)

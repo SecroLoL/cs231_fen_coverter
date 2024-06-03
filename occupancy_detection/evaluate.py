@@ -39,7 +39,16 @@ logger.addHandler(console_handler)
 def evaluate_model(model_type: ModelType, model_save_path: str, test_loader: DataLoader):
     """
     Computes accuracy and F1 scores over the test set using a saved model.
+
+    Args:
+        model_type (ModelType): The ModelType class of the model being evaluated.
+        model_save_path (str): Path to the trained model used for evaluation.
+        test_loader (DataLoader): The PyTorch Dataloader object for the test examples.
+
+    Returns:
+        Tuple[float, float, float]: Accuracy, Macro F1, and Weighted F1 of the model on the test examples.
     """
+     
     logger.info(f"Attempting to evaluate model {model_type}, path: {model_save_path}")
     device = default_device()
     

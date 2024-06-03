@@ -87,10 +87,8 @@ def finetune_model(chkpt_path: str, num_epochs: int, model_type: ModelType, save
     
     # Train loop
     for epoch in tqdm(range(num_epochs), desc="Beginning new epoch..."):
-        model.train()
+        model.train()  # set to train mode in case loaded in with eval mode on
         running_loss = 0.0
-
-        logger.info(f"Training? {model.training}")
         
         for inputs, labels in tqdm(loader, desc="Training batches..."):
             # Zero the parameter gradients

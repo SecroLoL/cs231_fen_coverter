@@ -39,10 +39,20 @@ def generate_checkpoint_path(save_path: str):
     
     return new_path
 
-def load_dataset(model_type: ModelType, data_path: str, batch_size: int = 32, subset_size: int = None):
+def load_dataset(model_type: ModelType, data_path: str, batch_size: int = 32, subset_size: int = None) -> DataLoader:
 
     """
-    TODO
+    Creates a DataLoader for a provided dataset, adjusting input sizes and shapes according to which model is 
+    being trained.
+
+    Args: 
+        model_type (ModelType): The ModelType class of the model that this dataset is used for. This is included to support the INCEPTION class, which requires addtl preprocessing.
+        data_path (str): The path to the data directory containing examples.
+        batch_size (int): Size of each batch of examples
+        subset_size (int, optional): If not using the entire dataset for the DataLoader, the number of examples to sample from the dataset. Defaults to all examples.
+
+    Returns:
+        A PyTorch DataLoader object that can be iterated to obtain the examples and labels.
     """
 
     if model_type is None:

@@ -55,6 +55,17 @@ def finetune_model(chkpt_path: str, num_epochs: int, model_type: ModelType, save
         train_size (int, optional): If not using the entire dataset for training, how many examples to train with. Defaults to using entire training set. 
 
     """
+
+    if not os.path.exists(chkpt_path): 
+        no_chkpt_path_msg = f"Expected to find a model checkpoint to train from, but did not find {chkpt_path}"
+        logger.error(no_chkpt_path_msg)
+        raise FileNotFoundError(no_chkpt_path_msg)
+    
+    if not os.path.exists(train_path):
+        no_train_dir_msg = f"Expected to find a training directory at {train_path}, but did not."
+        logger.error(no_train_dir_msg)
+        raise FileNotFoundError(no_train_dir_msg)
+
     device = default_device()
     model_checkpoint_path = generate_checkpoint_path(save_path)
     # Load datasets

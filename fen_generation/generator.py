@@ -13,10 +13,10 @@ import functools
 
 
 class Generator:
-    def __init__(self, occupancy_path, classifier_path):
+    def __init__(self, occupancy_model, classifier_model):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.occupancy_model = self._load_model(occupancy_path, occupancy_cnn)
-        self.classifier_model = self._load_model(classifier_path, classifier_cnn)
+        self.occupancy_model = occupancy_model
+        self.classifier_model = classifier_model
         self.transform = transforms.Compose([
             transforms.ToTensor()
         ])

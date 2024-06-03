@@ -1,0 +1,2 @@
+# to be used with leading extension of .../saved_models/{occupancy, pieces}/stratified_data
+MODEL_FILEPATHS = ['cnn/1k_cnn.pt', 'cnn/2k_cnn.pt' 'cnn/10k_cnn.pt', 'cnn/20k_cnn.pt', 'resnet/1k_resnet.pt', 'resnet/2k_resnet.pt', 'resnet/10k_resnet.pt', 'resnet/20k_resnet.pt']

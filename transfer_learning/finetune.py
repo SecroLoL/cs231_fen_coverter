@@ -43,6 +43,17 @@ def finetune_model(chkpt_path: str, num_epochs: int, model_type: ModelType, save
                    batch_size: int = 32, lr: float = 0.0001, train_size: int = None) -> None:
     """
     Finetune a pretrained model for either piece classification or occupancy detection
+
+    Args:
+        chkpt_path (str): The path to the pretrained model used as the base for transfer learning
+        num_epochs (int): The number of training epochs for finetuning
+        model_type (ModelType): The ModelType class of the model that is being finetuned.
+        save_path (str): The output path for the finetuned model
+        train_path (str): Path to the training data directory root
+        batch_size (int, optional): Number of examples per training batch. Defaults to 32.
+        lr (float, optional): Learning rate. Defaults to 1e-4.
+        train_size (int, optional): If not using the entire dataset for training, how many examples to train with. Defaults to using entire training set. 
+
     """
     device = default_device()
     model_checkpoint_path = generate_checkpoint_path(save_path)

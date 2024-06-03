@@ -15,7 +15,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from piece_classifier.utils import load_dataset
 from piece_classifier.model_types import ModelType, load_model, ARGPARSE_TO_TYPE
-from occupancy_detection.utils import *
+from occupancy_detection.utils import default_device, generate_checkpoint_path
 
 # Create and configure the logger
 logger = logging.getLogger('Chess transfer learning')

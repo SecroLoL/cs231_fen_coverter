@@ -99,6 +99,13 @@ def evaluate(generator, output_file, dataset_folder, occupancy_model, classifier
             
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    fen_generation_path = os.path.join(project_dir, 'fen_generation')
+    board_path = os.path.join(project_dir, 'board_detection')
+    occ_path = os.path.join(project_dir, 'saved_models', 'transfer_learning', 'occupancy')
+    class_path = os.path.join(project_dir, 'saved_models', 'transfer_learning', 'pieces')
+
     with open("generator_eval.txt", "w") as f:
         # edit this location as needed
         for filepath in MODEL_FILEPATHS:
